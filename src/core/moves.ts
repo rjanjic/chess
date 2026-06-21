@@ -29,31 +29,42 @@ const genPawn = (
   const startRank = color === Color.White ? 1 : 6;
   const f0 = fileOf(from), r0 = rankOf(from);
 
-  // Single push
+  // Single push (with promotion if it lands on the back rank).
   const r1 = r0 + dir;
   if (onBoard(f0, r1)) {
     const to1 = square(f0, r1);
     if (board[to1]! === EMPTY) {
-      out.push({ from, to: to1, flags: 0 });
-      // Double push
-      if (r0 === startRank) {
-        const r2 = r0 + 2 * dir;
-        const to2 = square(f0, r2);
-        if (board[to2]! === EMPTY) {
-          out.push({ from, to: to2, flags: MoveFlag.DoublePush });
+      if (r1 === 0 || r1 === 7) {
+        for (const promo of [PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight]) {
+          out.push({ from, to: to1, promotion: promo, flags: MoveFlag.Promotion });
+        }
+      } else {
+        out.push({ from, to: to1, flags: 0 });
+        if (r0 === startRank) {
+          const r2 = r0 + 2 * dir;
+          const to2 = square(f0, r2);
+          if (board[to2]! === EMPTY) {
+            out.push({ from, to: to2, flags: MoveFlag.DoublePush });
+          }
         }
       }
     }
   }
 
-  // Captures
+  // Captures (with promotion if landing on the back rank).
   for (const df of [-1, +1]) {
     const f1 = f0 + df;
     if (!onBoard(f1, r1)) continue;
     const to = square(f1, r1);
     const target = board[to]!;
     if (target !== EMPTY && pieceColor(target) !== color) {
-      out.push({ from, to, flags: MoveFlag.Capture });
+      if (r1 === 0 || r1 === 7) {
+        for (const promo of [PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight]) {
+          out.push({ from, to, promotion: promo, flags: MoveFlag.Promotion | MoveFlag.Capture });
+        }
+      } else {
+        out.push({ from, to, flags: MoveFlag.Capture });
+      }
     }
   }
 

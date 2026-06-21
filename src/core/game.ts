@@ -139,6 +139,12 @@ export class Game {
       board[capturedSq] = EMPTY;
     }
 
+    // Promotion: replace the pawn with the promotion piece on the target square.
+    if ((m.flags & MoveFlag.Promotion) !== 0) {
+      if (m.promotion === undefined) throw new Error('Promotion move missing promotion type');
+      board[m.to] = piece(m.promotion, movingColor);
+    }
+
     // Castling rights: revoke based on from/to squares.
     const castling = prev.castling
       & CASTLE_MASK_ON_FROM_OR_TO[m.from]!
