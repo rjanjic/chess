@@ -131,6 +131,14 @@ export class Game {
       }
     }
 
+    // En passant: remove the pawn that was captured *en passant*.
+    const movingColor = pieceColor(moving);
+    if ((m.flags & MoveFlag.EnPassant) !== 0) {
+      const dir = movingColor === Color.White ? -1 : +1;
+      const capturedSq = m.to + dir * 8;
+      board[capturedSq] = EMPTY;
+    }
+
     // Castling rights: revoke based on from/to squares.
     const castling = prev.castling
       & CASTLE_MASK_ON_FROM_OR_TO[m.from]!

@@ -23,6 +23,7 @@ const QUEEN_DIRS: ReadonlyArray<[number, number]> = [...ROOK_DIRS, ...BISHOP_DIR
 
 const genPawn = (
   out: Move[], from: Square, color: Color, board: Uint8Array,
+  enPassant: Square | null,
 ): void => {
   const dir = color === Color.White ? +1 : -1;
   const startRank = color === Color.White ? 1 : 6;
@@ -53,6 +54,14 @@ const genPawn = (
     const target = board[to]!;
     if (target !== EMPTY && pieceColor(target) !== color) {
       out.push({ from, to, flags: MoveFlag.Capture });
+    }
+  }
+
+  // En passant: an additional diagonal capture onto the ep target square.
+  if (enPassant !== null) {
+    const r1 = r0 + dir;
+    if (rankOf(enPassant) === r1 && Math.abs(fileOf(enPassant) - f0) === 1) {
+      out.push({ from, to: enPassant, flags: MoveFlag.EnPassant | MoveFlag.Capture });
     }
   }
 };
@@ -144,7 +153,7 @@ export const pseudoLegalMoves = (s: GameState): Move[] => {
     const p = s.board[sq]!;
     if (p === EMPTY || pieceColor(p) !== s.turn) continue;
     switch (pieceType(p)) {
-      case PieceType.Pawn:   genPawn(out, sq, s.turn, s.board);                     break;
+      case PieceType.Pawn:   genPawn(out, sq, s.turn, s.board, s.enPassant); break;
       case PieceType.Knight: genHopper(out, sq, s.turn, s.board, KNIGHT_OFFSETS); break;
       case PieceType.Bishop: genSlider(out, sq, s.turn, s.board, BISHOP_DIRS);    break;
       case PieceType.Rook:   genSlider(out, sq, s.turn, s.board, ROOK_DIRS);      break;
@@ -177,10 +186,17 @@ const findKingFast = (board: Uint8Array, color: Color): Square => {
 export const legalMoves = (s: GameState): Move[] => {
   const out: Move[] = [];
   for (const m of pseudoLegalMoves(s)) {
-    // Simulate on a scratch board.
     const board = new Uint8Array(s.board);
-    board[m.to] = board[m.from]!;
+    const moving = board[m.from]!;
+    board[m.to] = moving;
     board[m.from] = EMPTY;
+    if ((m.flags & MoveFlag.EnPassant) !== 0) {
+      const dir = pieceColor(moving) === Color.White ? -1 : +1;
+      board[m.to + dir * 8] = EMPTY;
+    }
+    // Castle simulation: the rook hop matters only for "rook discovers a pin
+    // on its own king" — castling is already gated to king-not-in-check at
+    // generation time, so the basic king-square check below is sufficient.
     const kingSq = findKingFast(board, s.turn);
     if (!isSquareAttacked(board, kingSq, opposite(s.turn))) out.push(m);
   }
