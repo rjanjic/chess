@@ -16,6 +16,10 @@ const KING_OFFSETS: ReadonlyArray<[number, number]> = [
   [-1, +1], [0, +1], [+1, +1],
 ];
 
+const ROOK_DIRS: ReadonlyArray<[number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const BISHOP_DIRS: ReadonlyArray<[number, number]> = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+const QUEEN_DIRS: ReadonlyArray<[number, number]> = [...ROOK_DIRS, ...BISHOP_DIRS];
+
 const genPawn = (
   out: Move[], from: Square, color: Color, board: Uint8Array,
 ): void => {
@@ -75,6 +79,29 @@ const genHopper = (
   }
 };
 
+const genSlider = (
+  out: Move[], from: Square, color: Color, board: Uint8Array,
+  dirs: ReadonlyArray<[number, number]>,
+): void => {
+  const f0 = fileOf(from), r0 = rankOf(from);
+  for (const [df, dr] of dirs) {
+    let f = f0 + df, r = r0 + dr;
+    while (onBoard(f, r)) {
+      const to = square(f, r);
+      const target = board[to]!;
+      if (target === EMPTY) {
+        out.push({ from, to, flags: 0 });
+      } else {
+        if (pieceColor(target) !== color) {
+          out.push({ from, to, flags: MoveFlag.Capture });
+        }
+        break;
+      }
+      f += df; r += dr;
+    }
+  }
+};
+
 export const pseudoLegalMoves = (s: GameState): Move[] => {
   const out: Move[] = [];
   for (let sq = 0; sq < 64; sq++) {
@@ -83,8 +110,11 @@ export const pseudoLegalMoves = (s: GameState): Move[] => {
     switch (pieceType(p)) {
       case PieceType.Pawn:   genPawn(out, sq, s.turn, s.board);                     break;
       case PieceType.Knight: genHopper(out, sq, s.turn, s.board, KNIGHT_OFFSETS); break;
+      case PieceType.Bishop: genSlider(out, sq, s.turn, s.board, BISHOP_DIRS);    break;
+      case PieceType.Rook:   genSlider(out, sq, s.turn, s.board, ROOK_DIRS);      break;
+      case PieceType.Queen:  genSlider(out, sq, s.turn, s.board, QUEEN_DIRS);     break;
       case PieceType.King:   genHopper(out, sq, s.turn, s.board, KING_OFFSETS);   break;
-      // Sliding pieces, special moves — added in later tasks.
+      // Special moves — added in later tasks.
     }
   }
   return out;
