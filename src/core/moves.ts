@@ -1,6 +1,6 @@
 import { Color, PieceType, EMPTY, pieceColor, pieceType, opposite } from './pieces.ts';
 import { fileOf, rankOf, onBoard, square } from './board.ts';
-import { MoveFlag } from './game.ts';
+import { MoveFlag, CASTLE_WK, CASTLE_WQ, CASTLE_BK, CASTLE_BQ } from './game.ts';
 import { isSquareAttacked } from './attacks.ts';
 
 import type { Square } from './board.ts';
@@ -103,6 +103,41 @@ const genSlider = (
   }
 };
 
+const genCastling = (
+  out: Move[], s: GameState, kingSq: Square,
+): void => {
+  const color = s.turn;
+  const homeRank = color === Color.White ? 0 : 7;
+  if (kingSq !== square(4, homeRank)) return;
+
+  const kSide = color === Color.White ? CASTLE_WK : CASTLE_BK;
+  const qSide = color === Color.White ? CASTLE_WQ : CASTLE_BQ;
+  const enemy = opposite(color);
+
+  // King must not currently be in check.
+  if (isSquareAttacked(s.board, kingSq, enemy)) return;
+
+  // Kingside: f, g empty; f, g not attacked.
+  if ((s.castling & kSide) !== 0) {
+    const f1 = square(5, homeRank), g1 = square(6, homeRank);
+    if (s.board[f1] === EMPTY && s.board[g1] === EMPTY
+        && !isSquareAttacked(s.board, f1, enemy)
+        && !isSquareAttacked(s.board, g1, enemy)) {
+      out.push({ from: kingSq, to: g1, flags: MoveFlag.Castle });
+    }
+  }
+
+  // Queenside: b, c, d empty; c, d not attacked.
+  if ((s.castling & qSide) !== 0) {
+    const b1 = square(1, homeRank), c1 = square(2, homeRank), d1 = square(3, homeRank);
+    if (s.board[b1] === EMPTY && s.board[c1] === EMPTY && s.board[d1] === EMPTY
+        && !isSquareAttacked(s.board, c1, enemy)
+        && !isSquareAttacked(s.board, d1, enemy)) {
+      out.push({ from: kingSq, to: c1, flags: MoveFlag.Castle });
+    }
+  }
+};
+
 export const pseudoLegalMoves = (s: GameState): Move[] => {
   const out: Move[] = [];
   for (let sq = 0; sq < 64; sq++) {
@@ -118,6 +153,16 @@ export const pseudoLegalMoves = (s: GameState): Move[] => {
       // Special moves — added in later tasks.
     }
   }
+
+  // Castling: generated once per side-to-move.
+  for (let sq = 0; sq < 64; sq++) {
+    const p = s.board[sq]!;
+    if (p !== EMPTY && pieceColor(p) === s.turn && pieceType(p) === PieceType.King) {
+      genCastling(out, s, sq);
+      break;
+    }
+  }
+
   return out;
 };
 

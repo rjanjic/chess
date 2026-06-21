@@ -1,5 +1,5 @@
 import { Color, PieceType, EMPTY, piece, pieceColor, pieceType, opposite } from './pieces.ts';
-import { square } from './board.ts';
+import { square, fileOf, rankOf } from './board.ts';
 import type { Square } from './board.ts';
 import { ZOBRIST } from './zobrist.ts';
 
@@ -116,6 +116,20 @@ export class Game {
     // Board mutation (basic move; special-move side-effects layered later).
     board[m.from] = EMPTY;
     board[m.to] = moving;
+
+    // Castle: also move the rook.
+    if ((m.flags & MoveFlag.Castle) !== 0) {
+      const rank = rankOf(m.from);
+      if (fileOf(m.to) === 6) {
+        // Kingside: rook h-file -> f-file
+        board[square(5, rank)] = board[square(7, rank)]!;
+        board[square(7, rank)] = EMPTY;
+      } else {
+        // Queenside: rook a-file -> d-file
+        board[square(3, rank)] = board[square(0, rank)]!;
+        board[square(0, rank)] = EMPTY;
+      }
+    }
 
     // Castling rights: revoke based on from/to squares.
     const castling = prev.castling
