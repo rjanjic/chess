@@ -1,6 +1,7 @@
-import { Color, PieceType, EMPTY, pieceColor, pieceType } from './pieces.ts';
+import { Color, PieceType, EMPTY, pieceColor, pieceType, opposite } from './pieces.ts';
 import { fileOf, rankOf, onBoard, square } from './board.ts';
 import { MoveFlag } from './game.ts';
+import { isSquareAttacked } from './attacks.ts';
 
 import type { Square } from './board.ts';
 import type { GameState, Move } from './game.ts';
@@ -116,6 +117,27 @@ export const pseudoLegalMoves = (s: GameState): Move[] => {
       case PieceType.King:   genHopper(out, sq, s.turn, s.board, KING_OFFSETS);   break;
       // Special moves — added in later tasks.
     }
+  }
+  return out;
+};
+
+const findKingFast = (board: Uint8Array, color: Color): Square => {
+  for (let sq = 0; sq < 64; sq++) {
+    const p = board[sq]!;
+    if (p !== EMPTY && pieceColor(p) === color && pieceType(p) === PieceType.King) return sq;
+  }
+  throw new Error(`No king of color ${color}`);
+};
+
+export const legalMoves = (s: GameState): Move[] => {
+  const out: Move[] = [];
+  for (const m of pseudoLegalMoves(s)) {
+    // Simulate on a scratch board.
+    const board = new Uint8Array(s.board);
+    board[m.to] = board[m.from]!;
+    board[m.from] = EMPTY;
+    const kingSq = findKingFast(board, s.turn);
+    if (!isSquareAttacked(board, kingSq, opposite(s.turn))) out.push(m);
   }
   return out;
 };
