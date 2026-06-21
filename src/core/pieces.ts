@@ -1,4 +1,3 @@
-export type PieceType = number;
 export const PieceType = {
   None: 0,
   Pawn: 1,
@@ -8,12 +7,13 @@ export const PieceType = {
   Queen: 5,
   King: 6,
 } as const;
+export type PieceType = typeof PieceType[keyof typeof PieceType];
 
-export type Color = number;
 export const Color = {
   White: 0,
   Black: 1,
 } as const;
+export type Color = typeof Color[keyof typeof Color];
 
 export type Piece = number;
 
