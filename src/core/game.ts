@@ -1,8 +1,7 @@
-import { Color, PieceType, EMPTY, piece, pieceColor, pieceType } from './pieces.ts';
+import { Color, PieceType, EMPTY, piece, pieceColor, pieceType, opposite } from './pieces.ts';
 import { square } from './board.ts';
-import { ZOBRIST } from './zobrist.ts';
-
 import type { Square } from './board.ts';
+import { ZOBRIST } from './zobrist.ts';
 
 export const CASTLE_WK = 1;
 export const CASTLE_WQ = 2;
@@ -64,9 +63,22 @@ const buildInitialBoard = (): Uint8Array => {
   return b;
 };
 
+// When the piece on these squares moves or is captured, the listed castling
+// bits are revoked. Default 0b1111 = no change.
+const CASTLE_MASK_ON_FROM_OR_TO = (() => {
+  const m = new Uint8Array(64).fill(0b1111);
+  m[square(0, 0)] = 0b1111 & ~CASTLE_WQ; // a1
+  m[square(4, 0)] = 0b1111 & ~(CASTLE_WK | CASTLE_WQ); // e1
+  m[square(7, 0)] = 0b1111 & ~CASTLE_WK; // h1
+  m[square(0, 7)] = 0b1111 & ~CASTLE_BQ; // a8
+  m[square(4, 7)] = 0b1111 & ~(CASTLE_BK | CASTLE_BQ); // e8
+  m[square(7, 7)] = 0b1111 & ~CASTLE_BK; // h8
+  return m;
+})();
+
 export class Game {
-  readonly states: GameState[];
-  readonly moves: Move[];
+  states: GameState[];
+  moves: Move[];
 
   private constructor(initial: GameState) {
     this.states = [initial];
@@ -92,6 +104,50 @@ export class Game {
 
   state(): GameState {
     return this.states[this.states.length - 1]!;
+  }
+
+  applyMove(m: Move): void {
+    const prev = this.state();
+    const board = new Uint8Array(prev.board);
+    const moving = board[m.from]!;
+    const movingType = pieceType(moving);
+    const captured = board[m.to]!;
+
+    // Board mutation (basic move; special-move side-effects layered later).
+    board[m.from] = EMPTY;
+    board[m.to] = moving;
+
+    // Castling rights: revoke based on from/to squares.
+    const castling = prev.castling
+      & CASTLE_MASK_ON_FROM_OR_TO[m.from]!
+      & CASTLE_MASK_ON_FROM_OR_TO[m.to]!;
+
+    // En passant: set only after a pawn double-push.
+    let enPassant: Square | null = null;
+    if ((m.flags & MoveFlag.DoublePush) !== 0) {
+      enPassant = (m.from + m.to) >> 1; // square between from and to
+    }
+
+    // Clocks.
+    const halfmoveClock = (movingType === PieceType.Pawn || captured !== EMPTY)
+      ? 0 : prev.halfmoveClock + 1;
+    const fullmoveNumber = prev.turn === Color.Black
+      ? prev.fullmoveNumber + 1 : prev.fullmoveNumber;
+
+    const next: GameState = {
+      board, turn: opposite(prev.turn),
+      castling, enPassant, halfmoveClock, fullmoveNumber,
+      zobrist: 0n, // filled below
+    };
+    next.zobrist = computeZobrist(next);
+    this.states.push(next);
+    this.moves.push(m);
+  }
+
+  undo(): void {
+    if (this.states.length <= 1) throw new Error('Nothing to undo');
+    this.states.pop();
+    this.moves.pop();
   }
 }
 
