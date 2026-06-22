@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.web.json && tsc -p tsconfig.worker.json",
     "test": "node --test --experimental-strip-types tests/**/*.test.ts",
-    "cli": "node dist/src/cli/main.js"
+    "cli": "node dist/src/cli/main.js",
+    "serve:web": "node scripts/serve.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
