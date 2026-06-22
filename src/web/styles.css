@@ -1,0 +1,66 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #312e2b;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+#board { cursor: pointer; user-select: none; display: block; }
+
+#controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  background: #b58863;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+button:hover { background: #c99a6c; }
+
+select {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  background: #454138;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+#status { font-size: 18px; font-weight: bold; min-height: 24px; }
+#thinking { font-style: italic; color: #aaa; min-height: 20px; }
+
+#promo-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+#promo-modal.visible { display: flex; }
+#promo-pieces { display: flex; gap: 8px; }
+#promo-pieces button { font-size: 40px; padding: 16px 20px; }

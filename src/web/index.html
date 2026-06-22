@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess</title>
+  <link rel="stylesheet" href="/src/web/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="status">White to move</div>
+    <svg id="board" width="512" height="512" viewBox="0 0 512 512"></svg>
+    <div id="thinking"></div>
+    <div id="controls">
+      <button id="btn-new">New Game</button>
+      <button id="btn-undo">Undo</button>
+      <select id="mode">
+        <option value="human">Human vs Human</option>
+        <option value="ai-black" selected>You play White (vs AI)</option>
+        <option value="ai-white">You play Black (vs AI)</option>
+      </select>
+    </div>
+  </div>
+  <div id="promo-modal">
+    <div id="promo-pieces">
+      <button data-piece="5">&#9813;</button>
+      <button data-piece="4">&#9814;</button>
+      <button data-piece="3">&#9815;</button>
+      <button data-piece="2">&#9816;</button>
+    </div>
+  </div>
+  <script type="module" src="/dist/src/web/main.js"></script>
+</body>
+</html>
