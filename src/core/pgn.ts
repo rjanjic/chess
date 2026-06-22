@@ -37,8 +37,12 @@ const stripCommentsAndHeaders = (pgn: string): string => {
   let s = pgn.replace(/\[[^\]]*\]/g, ' ');
   // Remove curly-brace comments
   s = s.replace(/\{[^}]*\}/g, ' ');
-  // Remove parenthesized variations (greedy, single-level supported — sufficient for tests).
-  s = s.replace(/\([^()]*\)/g, ' ');
+  // Strip nested variations iteratively until none remain.
+  let prev = '';
+  while (prev !== s) {
+    prev = s;
+    s = s.replace(/\([^()]*\)/g, ' ');
+  }
   return s;
 };
 
@@ -53,6 +57,7 @@ export const fromPGN = (pgn: string): Game => {
   const game = Game.newGame();
   for (const tok of tokens) {
     if (RESULT_TOKENS.has(tok)) break;
+    if (!/^[a-zA-Z]/.test(tok)) continue;  // skip NAGs, numbers, annotations
     game.applyMove(sanToMove(game, tok));
   }
   return game;

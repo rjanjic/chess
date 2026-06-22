@@ -39,3 +39,15 @@ test('fromPGN handles a result token at the end', () => {
   const g = fromPGN(pgn);
   assert.equal(g.moves.length, 2);
 });
+
+test('fromPGN skips NAG annotation tokens', () => {
+  const pgn = '1. e4 $1 e5 $2 *';
+  const g = fromPGN(pgn);
+  assert.equal(g.moves.length, 2);
+});
+
+test('fromPGN handles nested parenthetical variations', () => {
+  const pgn = '1. e4 (1. d4 (1. c4 c5)) e5 *';
+  const g = fromPGN(pgn);
+  assert.equal(g.moves.length, 2);
+});
