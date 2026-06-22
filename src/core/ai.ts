@@ -15,7 +15,9 @@ const orderMoves = (board: Uint8Array, moves: Move[]): Move[] => {
   const scored = moves.map((m) => {
     let s = 0;
     if ((m.flags & MoveFlag.Capture) !== 0) {
-      const victim = MATERIAL[pieceType(board[m.to]!)] ?? 0;
+      const victim = (m.flags & MoveFlag.EnPassant) !== 0
+        ? 100  // captured pawn (not on m.to square for en-passant)
+        : (MATERIAL[pieceType(board[m.to]!)] ?? 0);
       const attacker = MATERIAL[pieceType(board[m.from]!)] ?? 0;
       s = 10_000 + victim - (attacker >> 2);
     }
