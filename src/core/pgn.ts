@@ -20,7 +20,7 @@ const resultFor = (g: Game): string => {
 export const toPGN = (g: Game): string => {
   // We rebuild SAN as we walk the moves, because moveToSan depends on the
   // position the move was made from.
-  const replay = Game.newGame();
+  const replay = Game.fromState(g.states[0]!);
   const tokens: string[] = [];
   for (let i = 0; i < g.moves.length; i++) {
     if (i % 2 === 0) tokens.push(`${(i >> 1) + 1}.`);

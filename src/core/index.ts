@@ -1,7 +1,7 @@
 export { Game, MoveFlag, CASTLE_WK, CASTLE_WQ, CASTLE_BK, CASTLE_BQ } from './game.ts';
 export type { Move, GameState } from './game.ts';
 
-export { Color, PieceType, EMPTY, piece, pieceColor, pieceType, opposite } from './pieces.ts';
+export { Color, PieceType, EMPTY, isEmpty, piece, pieceColor, pieceType, opposite } from './pieces.ts';
 export type { Piece } from './pieces.ts';
 
 export {

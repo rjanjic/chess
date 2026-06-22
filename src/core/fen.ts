@@ -106,8 +106,16 @@ export const fromFEN = (fen: string): GameState => {
 
   const halfmoveClock = Number(halfStr);
   const fullmoveNumber = Number(fullStr);
-  if (!Number.isFinite(halfmoveClock) || !Number.isFinite(fullmoveNumber)) {
-    throw new FenParseError(`invalid clocks: ${halfStr} ${fullStr}`);
+  if (!Number.isInteger(halfmoveClock) || halfmoveClock < 0)
+    throw new FenParseError('Invalid halfmove clock: ' + parts[4]);
+  if (!Number.isInteger(fullmoveNumber) || fullmoveNumber < 1)
+    throw new FenParseError('Invalid fullmove number: ' + parts[5]);
+
+  if (enPassant !== null) {
+    const epRank = Math.floor(enPassant / 8);
+    const expectedEpRank = turn === Color.White ? 5 : 2;
+    if (epRank !== expectedEpRank)
+      throw new FenParseError('Invalid en-passant square rank');
   }
 
   const partial = { board, turn, castling, enPassant, halfmoveClock, fullmoveNumber };
