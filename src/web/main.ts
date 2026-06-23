@@ -19,6 +19,7 @@ let legalTargets: Square[]    = [];
 let peerConn: PeerConnection | null = null;
 let myColor: Color                  = Color.White;
 let pendingDrawOffer                = false;
+let hostSetupAbort: AbortController | null = null;
 
 // ── DOM references ────────────────────────────────────────────────────────────
 
@@ -177,12 +178,14 @@ const onPeerMessage = (msg: PeerMessage): void => {
       redraw();
     }
   } else if (msg.type === 'resign') {
+    peerConn?.close(); peerConn = null;
     showBanner('Opponent resigned. You win!');
     onlineBar.classList.add('hidden');
   } else if (msg.type === 'draw-offer') {
     pendingDrawOffer = true;
     drawPend.classList.remove('hidden');
   } else if (msg.type === 'draw-accept') {
+    peerConn?.close(); peerConn = null;
     showBanner('Draw agreed.');
     onlineBar.classList.add('hidden');
   }
@@ -191,6 +194,8 @@ const onPeerMessage = (msg: PeerMessage): void => {
 // ── Connection flows ──────────────────────────────────────────────────────────
 
 const startHost = async (): Promise<void> => {
+  hostSetupAbort?.abort();
+  hostSetupAbort = new AbortController();
   hideConnPanels();
   hostSetup.classList.remove('hidden');
   bannerEl.classList.add('hidden');
@@ -203,8 +208,8 @@ const startHost = async (): Promise<void> => {
     document.getElementById('btn-apply-answer')!.addEventListener('click', () => {
       const input = answerInput.value.trim();
       if (!input) return;
-      void result.connect(input).catch(() => showBanner('Invalid reply link — please try again.'));
-    }, { once: true });
+      result.connect(input).catch(() => showBanner('Invalid reply link — please try again.'));
+    }, { once: true, signal: hostSetupAbort.signal });
   } catch (err) {
     showBanner(`Failed to create game: ${String(err)}`);
   }
@@ -248,6 +253,7 @@ setupInput(svgEl, isFlipped, (sq) => {
 
 document.getElementById('btn-new')!.addEventListener('click', () => {
   peerConn?.close(); peerConn = null;
+  hostSetupAbort?.abort(); hostSetupAbort = null;
   game = Game.newGame();
   selectedSq = null; legalTargets = []; aiThinking = false; pendingDrawOffer = false;
   hideConnPanels();
@@ -309,6 +315,7 @@ document.getElementById('btn-draw-decline')!.addEventListener('click', () => {
 
 modeSelect.addEventListener('change', () => {
   peerConn?.close(); peerConn = null;
+  hostSetupAbort?.abort(); hostSetupAbort = null;
   mode = modeSelect.value as Mode;
   game = Game.newGame();
   selectedSq = null; legalTargets = []; aiThinking = false; pendingDrawOffer = false;
