@@ -159,9 +159,12 @@ const onPeerOpen = (): void => {
 };
 
 const onPeerClose = (): void => {
+  if (peerConn === null) return;
   showBanner(`Opponent disconnected. FEN: ${toFEN(game.state())}`);
   onlineBar.classList.add('hidden');
   peerConn = null;
+  drawPend.classList.add('hidden');
+  pendingDrawOffer = false;
   redraw();
 };
 
@@ -178,14 +181,14 @@ const onPeerMessage = (msg: PeerMessage): void => {
       redraw();
     }
   } else if (msg.type === 'resign') {
-    peerConn?.close(); peerConn = null;
+    const pc = peerConn; peerConn = null; pc?.close();
     showBanner('Opponent resigned. You win!');
     onlineBar.classList.add('hidden');
   } else if (msg.type === 'draw-offer') {
     pendingDrawOffer = true;
     drawPend.classList.remove('hidden');
   } else if (msg.type === 'draw-accept') {
-    peerConn?.close(); peerConn = null;
+    const pc = peerConn; peerConn = null; pc?.close();
     showBanner('Draw agreed.');
     onlineBar.classList.add('hidden');
   }
