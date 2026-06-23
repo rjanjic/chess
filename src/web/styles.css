@@ -64,3 +64,46 @@ select {
 #promo-modal.visible { display: flex; }
 #promo-pieces { display: flex; gap: 8px; }
 #promo-pieces button { font-size: 40px; padding: 16px 20px; }
+
+.hidden { display: none !important; }
+
+.conn-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 512px;
+  width: 100%;
+}
+
+.conn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.conn-row input {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  background: #454138;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+#online-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#banner {
+  font-size: 16px;
+  font-weight: bold;
+  min-height: 24px;
+  padding: 8px 16px;
+  background: #454138;
+  border-radius: 4px;
+  text-align: center;
+  max-width: 512px;
+  width: 100%;
+}

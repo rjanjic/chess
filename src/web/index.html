@@ -18,8 +18,43 @@
         <option value="human">Human vs Human</option>
         <option value="ai-black" selected>You play White (vs AI)</option>
         <option value="ai-white">You play Black (vs AI)</option>
+        <option value="online-host">Host online game</option>
+        <option value="online-join">Join online game</option>
       </select>
     </div>
+    <div id="host-setup" class="hidden conn-section">
+      <p>Share this link with your opponent:</p>
+      <div class="conn-row">
+        <input id="offer-url" type="text" readonly />
+        <button id="btn-copy-offer">Copy</button>
+      </div>
+      <p>Then paste their answer here:</p>
+      <div class="conn-row">
+        <input id="answer-input" type="text" placeholder="Paste answer URL…" />
+        <button id="btn-apply-answer">Connect</button>
+      </div>
+    </div>
+    <div id="join-setup" class="hidden conn-section">
+      <p>Paste the host's link here:</p>
+      <div class="conn-row">
+        <input id="join-input" type="text" placeholder="Paste invite URL…" />
+        <button id="btn-join">Join</button>
+      </div>
+    </div>
+    <div id="manual-join" class="hidden conn-section">
+      <p>Detected invite link — connecting as guest…</p>
+      <div class="conn-row">
+        <input id="answer-url" type="text" readonly />
+        <button id="btn-copy-answer">Copy</button>
+      </div>
+      <p>Share the answer link above with the host.</p>
+    </div>
+    <div id="online-bar" class="hidden">
+      <button id="btn-resign">Resign</button>
+      <button id="btn-draw">Offer Draw</button>
+      <span id="draw-pending" class="hidden">Draw offered — waiting…</span>
+    </div>
+    <div id="banner" class="hidden"></div>
   </div>
   <div id="promo-modal">
     <div id="promo-pieces">
