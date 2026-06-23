@@ -65,45 +65,68 @@ select {
 #promo-pieces { display: flex; gap: 8px; }
 #promo-pieces button { font-size: 40px; padding: 16px 20px; }
 
+/* Utility ------------------------------------------------------------------ */
 .hidden { display: none !important; }
 
-.conn-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 512px;
-  width: 100%;
+/* Connection setup panels -------------------------------------------------- */
+#conn-panel { width: 512px; }
+
+.conn-section { margin-top: 12px; }
+
+.conn-label {
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 4px;
 }
 
 .conn-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-.conn-row input {
+.conn-row input[type="text"] {
   flex: 1;
-  padding: 8px;
-  font-size: 14px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: monospace;
+  background: #1a1917;
+  color: #eee;
+  border: 1px solid #555;
   border-radius: 4px;
-  background: #454138;
-  color: #fff;
-  border: 1px solid #777;
+  min-width: 0;
 }
 
+#conn-waiting {
+  font-style: italic;
+  color: #aaa;
+  font-size: 13px;
+}
+
+/* Online-game controls ----------------------------------------------------- */
 #online-bar {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
+#draw-pending {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* Notification banner ------------------------------------------------------ */
 #banner {
-  font-size: 16px;
-  font-weight: bold;
-  min-height: 24px;
-  padding: 8px 16px;
-  background: #454138;
+  width: 512px;
+  padding: 10px 16px;
+  background: #3d2b00;
+  border: 1px solid #b58863;
   border-radius: 4px;
+  font-size: 13px;
   text-align: center;
-  max-width: 512px;
-  width: 100%;
+  word-break: break-all;
 }

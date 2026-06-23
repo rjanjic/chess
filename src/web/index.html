@@ -11,6 +11,7 @@
     <div id="status">White to move</div>
     <svg id="board" width="512" height="512" viewBox="0 0 512 512"></svg>
     <div id="thinking"></div>
+
     <div id="controls">
       <button id="btn-new">New Game</button>
       <button id="btn-undo">Undo</button>
@@ -18,44 +19,64 @@
         <option value="human">Human vs Human</option>
         <option value="ai-black" selected>You play White (vs AI)</option>
         <option value="ai-white">You play Black (vs AI)</option>
-        <option value="online-host">Host online game</option>
-        <option value="online-join">Join online game</option>
+        <option value="online-host">Host Online Game</option>
+        <option value="online-join">Join Online Game</option>
       </select>
     </div>
-    <div id="host-setup" class="hidden conn-section">
-      <p>Share this link with your opponent:</p>
-      <div class="conn-row">
-        <input id="offer-url" type="text" readonly />
-        <button id="btn-copy-offer">Copy</button>
+
+    <div id="conn-panel">
+
+      <!-- Host step 1: share offer URL, then paste opponent's answer -->
+      <div id="host-setup" class="conn-section hidden">
+        <p class="conn-label">Share this invite link with your opponent:</p>
+        <div class="conn-row">
+          <input id="offer-url" type="text" readonly />
+          <button id="btn-copy-offer">Copy</button>
+        </div>
+        <p class="conn-label">Then paste their reply link here:</p>
+        <div class="conn-row">
+          <input id="answer-input" type="text" placeholder="Paste reply link here&#x2026;" />
+          <button id="btn-apply-answer">Connect</button>
+        </div>
       </div>
-      <p>Then paste their answer here:</p>
-      <div class="conn-row">
-        <input id="answer-input" type="text" placeholder="Paste answer URL…" />
-        <button id="btn-apply-answer">Connect</button>
+
+      <!-- Join (auto-detected from URL hash): show answer URL to return to host -->
+      <div id="join-setup" class="conn-section hidden">
+        <p class="conn-label">Send this link back to your opponent:</p>
+        <div class="conn-row">
+          <input id="answer-url" type="text" readonly />
+          <button id="btn-copy-answer">Copy</button>
+        </div>
+        <p id="conn-waiting">Waiting for connection&#x2026;</p>
       </div>
+
+      <!-- Join (manual): paste offer URL -->
+      <div id="manual-join" class="conn-section hidden">
+        <p class="conn-label">Paste your opponent&#x27;s invite link:</p>
+        <div class="conn-row">
+          <input id="offer-input" type="text" placeholder="Paste invite link here&#x2026;" />
+          <button id="btn-start-join">Join</button>
+        </div>
+      </div>
+
     </div>
-    <div id="join-setup" class="hidden conn-section">
-      <p>Paste the host's link here:</p>
-      <div class="conn-row">
-        <input id="join-input" type="text" placeholder="Paste invite URL…" />
-        <button id="btn-join">Join</button>
-      </div>
-    </div>
-    <div id="manual-join" class="hidden conn-section">
-      <p>Detected invite link — connecting as guest…</p>
-      <div class="conn-row">
-        <input id="answer-url" type="text" readonly />
-        <button id="btn-copy-answer">Copy</button>
-      </div>
-      <p>Share the answer link above with the host.</p>
-    </div>
+
+    <!-- Shown once the DataChannel is open -->
     <div id="online-bar" class="hidden">
       <button id="btn-resign">Resign</button>
-      <button id="btn-draw">Offer Draw</button>
-      <span id="draw-pending" class="hidden">Draw offered — waiting…</span>
+      <button id="btn-draw-offer">Offer Draw</button>
+      <div id="draw-pending" class="hidden">
+        Opponent offers a draw.
+        <button id="btn-draw-accept">Accept</button>
+        <button id="btn-draw-decline">Decline</button>
+      </div>
     </div>
+
+    <!-- Notification banner: resign / disconnect / desync / draw -->
     <div id="banner" class="hidden"></div>
+
   </div>
+
   <div id="promo-modal">
     <div id="promo-pieces">
       <button data-piece="5">&#9813;</button>
