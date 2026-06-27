@@ -1,5 +1,5 @@
 import type { GameState } from '../core/index.ts';
-import { pieceType, pieceColor, isEmpty, Color } from '../core/index.ts';
+import { pieceType, pieceColor, isEmpty } from '../core/index.ts';
 
 // Indexed by PieceType value: 0=None, 1=Pawn, 2=Knight, 3=Bishop, 4=Rook, 5=Queen, 6=King
 const PIECES = [

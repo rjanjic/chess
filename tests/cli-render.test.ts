@@ -58,4 +58,24 @@ describe('renderBoard', () => {
     const out = renderBoard(Game.newGame().state());
     assert.doesNotMatch(out, /[PNBRQK]/);
   });
+
+  it('shows white pawns in rank 2', () => {
+    const out = renderBoard(Game.newGame().state());
+    const lines = out.split('\n');
+    const rank2 = lines.find(l => l.startsWith('2 │'))!;
+    assert.ok(rank2.includes('♙'), 'white pawn');
+  });
+
+  it('shows black pawns in rank 7', () => {
+    const out = renderBoard(Game.newGame().state());
+    const lines = out.split('\n');
+    const rank7 = lines.find(l => l.startsWith('7 │'))!;
+    assert.ok(rank7.includes('♟'), 'black pawn');
+  });
+
+  it('has exactly 7 separator lines between ranks', () => {
+    const out = renderBoard(Game.newGame().state());
+    const seps = out.split('\n').filter(l => l.startsWith('  ├'));
+    assert.strictEqual(seps.length, 7);
+  });
 });
