@@ -15,6 +15,8 @@ const STATUS_MSG: Record<string, string> = {
   'draw-material':   'Draw by insufficient material.',
 };
 
+const clearScreen = (): void => { process.stdout.write('\x1b[2J\x1b[H'); };
+
 const playGame = async (
   rl: ReturnType<typeof createInterface>,
   aiColor: number | null,  // null = pass-and-play; Color.White or Color.Black
@@ -22,7 +24,8 @@ const playGame = async (
   const g = Game.newGame();
 
   while (true) {
-    console.log('\n' + renderBoard(g.state()));
+    clearScreen();
+    console.log(renderBoard(g.state()));
 
     const st = status(g);
     if (st !== 'ongoing') {
@@ -59,8 +62,6 @@ const playGame = async (
         continue;
       }
       g.undo();
-      // In AI mode the last move before the human's turn was the AI's response —
-      // undo it too so the human returns to their previous turn.
       if (aiColor !== null && g.moves.length > 0) g.undo();
       continue;
     }
@@ -78,8 +79,9 @@ const main = async (): Promise<void> => {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   rl.on('close', () => process.exit(0));
 
-  console.log('\nChess Engine v1\n');
   while (true) {
+    clearScreen();
+    console.log('Chess\n');
     console.log('1. Pass-and-play');
     console.log('2. Vs AI (you play White)');
     console.log('3. Vs AI (you play Black)');
@@ -88,14 +90,15 @@ const main = async (): Promise<void> => {
     if (choice === '1') {
       await playGame(rl, null);
     } else if (choice === '2') {
-      await playGame(rl, Color.Black);   // AI plays Black
+      await playGame(rl, Color.Black);
     } else if (choice === '3') {
-      await playGame(rl, Color.White);   // AI plays White
+      await playGame(rl, Color.White);
     } else {
       console.log('Enter 1, 2, or 3.\n');
       continue;
     }
     console.log('\n--- Press Enter to return to menu ---');
+    await rl.question('');
   }
 };
 
