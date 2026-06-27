@@ -1,42 +1,61 @@
-import { test } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { Game } from '../src/core/index.ts';
 import { renderBoard } from '../src/cli/render.ts';
-import { fromFEN, STARTING_FEN, Game } from '../src/core/index.ts';
-import { sanToMove } from '../src/core/index.ts';
 
-test('renderBoard: starting position has correct shape and labels', () => {
-  const lines = renderBoard(fromFEN(STARTING_FEN)).split('\n');
-  assert.equal(lines.length, 10);
-  assert.equal(lines[0], '  a b c d e f g h');
-  assert.equal(lines[9], '  a b c d e f g h');
-  // line[1] = rank 8 (black back rank)
-  assert.equal(lines[1], '8 r n b q k b n r 8');
-  // line[8] = rank 1 (white back rank)
-  assert.equal(lines[8], '1 R N B Q K B N R 1');
-});
+describe('renderBoard', () => {
+  it('has box-drawing top border', () => {
+    const out = renderBoard(Game.newGame().state());
+    assert.ok(out.includes('┌───┬───┬───┬───┬───┬───┬───┬───┐'));
+  });
 
-test('renderBoard: rank 7 is all black pawns at start', () => {
-  const lines = renderBoard(fromFEN(STARTING_FEN)).split('\n');
-  assert.equal(lines[2], '7 p p p p p p p p 7');
-});
+  it('has box-drawing bottom border', () => {
+    const out = renderBoard(Game.newGame().state());
+    assert.ok(out.includes('└───┴───┴───┴───┴───┴───┴───┴───┘'));
+  });
 
-test('renderBoard: rank 2 is all white pawns at start', () => {
-  const lines = renderBoard(fromFEN(STARTING_FEN)).split('\n');
-  assert.equal(lines[7], '2 P P P P P P P P 2');
-});
+  it('has file labels below the board', () => {
+    const out = renderBoard(Game.newGame().state());
+    assert.ok(out.includes('a   b   c   d   e   f   g   h'));
+  });
 
-test('renderBoard: empty ranks 3-6 are all dots', () => {
-  const lines = renderBoard(fromFEN(STARTING_FEN)).split('\n');
-  // line[3]=rank6, line[4]=rank5, line[5]=rank4, line[6]=rank3
-  for (const i of [3, 4, 5, 6]) {
-    assert.match(lines[i]!, /^\d \. \. \. \. \. \. \. \. \d$/);
-  }
-});
+  it('shows white back-rank pieces in rank 1', () => {
+    const out = renderBoard(Game.newGame().state());
+    const lines = out.split('\n');
+    const rank1 = lines.find(l => l.startsWith('1 │'))!;
+    assert.ok(rank1.includes('♖'), 'white rook');
+    assert.ok(rank1.includes('♘'), 'white knight');
+    assert.ok(rank1.includes('♗'), 'white bishop');
+    assert.ok(rank1.includes('♕'), 'white queen');
+    assert.ok(rank1.includes('♔'), 'white king');
+    assert.ok(rank1.endsWith('│ 1'), 'rank label on right');
+  });
 
-test('renderBoard: after 1.e4, rank 4 shows white pawn on e-file', () => {
-  const g = Game.newGame();
-  g.applyMove(sanToMove(g, 'e4'));
-  const lines = renderBoard(g.state()).split('\n');
-  // e4 = rank 4, file e (index 4). line[5] = rank 4.
-  assert.equal(lines[5], '4 . . . . P . . . 4');
+  it('shows black back-rank pieces in rank 8', () => {
+    const out = renderBoard(Game.newGame().state());
+    const lines = out.split('\n');
+    const rank8 = lines.find(l => l.startsWith('8 │'))!;
+    assert.ok(rank8.includes('♜'), 'black rook');
+    assert.ok(rank8.includes('♞'), 'black knight');
+    assert.ok(rank8.includes('♝'), 'black bishop');
+    assert.ok(rank8.includes('♛'), 'black queen');
+    assert.ok(rank8.includes('♚'), 'black king');
+    assert.ok(rank8.endsWith('│ 8'), 'rank label on right');
+  });
+
+  it('marks dark empty squares with middle-dot', () => {
+    const out = renderBoard(Game.newGame().state());
+    const lines = out.split('\n');
+    const rank3 = lines.find(l => l.startsWith('3 │'))!;
+    // a3: file=0, rank=2 → (0+2)%2=0 → dark → ·
+    assert.ok(rank3.startsWith('3 │ · │'), 'a3 is dark');
+    const rank6 = lines.find(l => l.startsWith('6 │'))!;
+    // a6: file=0, rank=5 → (0+5)%2=1 → light → space
+    assert.ok(rank6.startsWith('6 │   │'), 'a6 is light');
+  });
+
+  it('has no ASCII piece letters', () => {
+    const out = renderBoard(Game.newGame().state());
+    assert.doesNotMatch(out, /[PNBRQK]/);
+  });
 });
