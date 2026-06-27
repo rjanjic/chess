@@ -43,6 +43,7 @@ const wirePeer = (
   let closeCallback: (() => void) | null = null;
   let destroyed = false;
   let buf = '';
+  const earlyMoves: string[] = [];
 
   const handleData = (chunk: string): void => {
     buf += chunk;
@@ -50,7 +51,12 @@ const wirePeer = (
     buf = lines.pop() ?? '';
     for (const line of lines) {
       const san = line.trim();
-      if (san) moveCallback?.(san);
+      if (!san) continue;
+      if (moveCallback) {
+        moveCallback(san);
+      } else {
+        earlyMoves.push(san);
+      }
     }
   };
 
@@ -58,7 +64,10 @@ const wirePeer = (
 
   const peer: NetworkPeer = {
     send:    (san) => { if (!destroyed) writeLine(san + '\n'); },
-    onMove:  (cb)  => { moveCallback = cb; },
+    onMove:  (cb)  => {
+      moveCallback = cb;
+      for (const san of earlyMoves.splice(0)) cb(san);
+    },
     onClose: (cb)  => { closeCallback = cb; },
     close:   ()    => { destroyed = true; destroy(); },
   };
