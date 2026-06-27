@@ -73,11 +73,13 @@ describe('hostGame + joinGame integration', () => {
 
     await new Promise(r => setTimeout(r, 50));
 
-    assert.deepStrictEqual(joinReceived, ['e4'], 'joiner receives host move');
-    assert.deepStrictEqual(hostReceived, ['e5'], 'host receives joiner move');
-
-    hostPeer.close();
-    joinPeer.close();
+    try {
+      assert.deepStrictEqual(joinReceived, ['e4'], 'joiner receives host move');
+      assert.deepStrictEqual(hostReceived, ['e5'], 'host receives joiner move');
+    } finally {
+      hostPeer.close();
+      joinPeer.close();
+    }
   });
 
   it('fires onClose on joiner when host closes connection', async () => {
@@ -98,7 +100,10 @@ describe('hostGame + joinGame integration', () => {
     hostPeer.close();
     await new Promise(r => setTimeout(r, 50));
 
-    assert.ok(closed, 'onClose fires when remote peer closes');
-    joinPeer.close();
+    try {
+      assert.ok(closed, 'onClose fires when remote peer closes');
+    } finally {
+      joinPeer.close();
+    }
   });
 });

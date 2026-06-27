@@ -41,6 +41,7 @@ const wirePeer = (
 } => {
   let moveCallback:  ((san: string) => void) | null = null;
   let closeCallback: (() => void) | null = null;
+  let destroyed = false;
   let buf = '';
 
   const handleData = (chunk: string): void => {
@@ -56,10 +57,10 @@ const wirePeer = (
   const handleClose = (): void => { closeCallback?.(); };
 
   const peer: NetworkPeer = {
-    send:    (san) => writeLine(san + '\n'),
+    send:    (san) => { if (!destroyed) writeLine(san + '\n'); },
     onMove:  (cb)  => { moveCallback = cb; },
     onClose: (cb)  => { closeCallback = cb; },
-    close:   destroy,
+    close:   ()    => { destroyed = true; destroy(); },
   };
 
   return { peer, handleData, handleClose };
@@ -88,6 +89,7 @@ export const hostGame = (
         );
         socket.on('data', handleData);
         socket.on('close', handleClose);
+        socket.on('error', () => { /* swallow post-connect errors */ });
         resolve(peer);
       });
     });
@@ -105,6 +107,7 @@ export const joinGame = (host: string, port: number): Promise<NetworkPeer> =>
     socket.once('connect', () => {
       socket.on('data', handleData);
       socket.on('close', handleClose);
+      socket.on('error', () => { /* swallow post-connect errors */ });
       resolve(peer);
     });
     socket.on('error', reject);
