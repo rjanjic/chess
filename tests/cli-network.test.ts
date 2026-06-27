@@ -65,15 +65,19 @@ describe('hostGame + joinGame integration', () => {
       hostPeerPromise,
     ]);
 
-    hostPeer.onMove(san => hostReceived.push(san));
-    joinPeer.onMove(san => joinReceived.push(san));
+    let joinGotMove!: () => void;
+    let hostGotMove!: () => void;
+    const joinReceivedOne = new Promise<void>(r => { joinGotMove = r; });
+    const hostReceivedOne = new Promise<void>(r => { hostGotMove = r; });
+
+    hostPeer.onMove(san => { hostReceived.push(san); hostGotMove(); });
+    joinPeer.onMove(san => { joinReceived.push(san); joinGotMove(); });
 
     hostPeer.send('e4');
     joinPeer.send('e5');
 
-    await new Promise(r => setTimeout(r, 50));
-
     try {
+      await Promise.all([joinReceivedOne, hostReceivedOne]);
       assert.deepStrictEqual(joinReceived, ['e4'], 'joiner receives host move');
       assert.deepStrictEqual(hostReceived, ['e5'], 'host receives joiner move');
     } finally {
@@ -94,14 +98,15 @@ describe('hostGame + joinGame integration', () => {
       hostPeerPromise,
     ]);
 
-    let closed = false;
-    joinPeer.onClose(() => { closed = true; });
+    let resolveClose!: () => void;
+    const closedPromise = new Promise<void>(r => { resolveClose = r; });
+    joinPeer.onClose(() => { resolveClose(); });
 
     hostPeer.close();
-    await new Promise(r => setTimeout(r, 50));
 
     try {
-      assert.ok(closed, 'onClose fires when remote peer closes');
+      await closedPromise;
+      assert.ok(true, 'onClose fires when remote peer closes');
     } finally {
       joinPeer.close();
     }
